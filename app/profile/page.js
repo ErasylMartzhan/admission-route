@@ -1,23 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepHeader from '../../components/StepHeader';
 import { useProfile } from '../../lib/ProfileContext';
 import { INTERESTS, CITIES, BUDGETS, GRADES } from '../../lib/constants';
 
+const EMPTY_FORM = {
+  grade: '11',
+  interests: [],
+  entScore: '',
+  budget: 'flexible',
+  cities: ['Любой город'],
+};
+
 export default function ProfilePage() {
   const router = useRouter();
-  const { profile, setProfile } = useProfile();
-  const [form, setForm] = useState(
-    profile || {
-      grade: '11',
-      interests: [],
-      entScore: '',
-      budget: 'flexible',
-      cities: ['Любой город'],
-    }
-  );
+  const { profile, loaded, setProfile } = useProfile();
+  const [form, setForm] = useState(profile || EMPTY_FORM);
+
+  // profile loads from localStorage asynchronously (after mount), so on a
+  // hard reload it isn't there yet at first render — sync the form once it lands.
+  useEffect(() => {
+    if (loaded && profile) setForm(profile);
+  }, [loaded]);
 
   function toggleInterest(interest) {
     setForm((f) => ({
