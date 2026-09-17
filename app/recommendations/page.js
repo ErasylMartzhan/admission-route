@@ -7,6 +7,7 @@ import StepHeader from '../../components/StepHeader';
 import { useProfile } from '../../lib/ProfileContext';
 import { universities } from '../../lib/data/universities';
 import { recommend } from '../../lib/recommend';
+import { useAiText } from '../../lib/ai/useAiText';
 
 export default function RecommendationsPage() {
   const { profile, loaded, compareIds, toggleCompare } = useProfile();
@@ -16,9 +17,15 @@ export default function RecommendationsPage() {
     if (loaded && !profile) router.replace('/profile');
   }, [loaded, profile, router]);
 
-  if (!profile) return null;
+  const results = profile ? recommend(profile, universities, 3) : [];
 
-  const results = recommend(profile, universities, 3);
+  const explainPayload =
+    profile && results.length
+      ? { profile, items: results.map((r) => ({ id: r.id, name: r.name, reasons: r.reasons })) }
+      : null;
+  const { data: aiById } = useAiText('/api/ai/explain', explainPayload, {}, (j) => j.byId);
+
+  if (!profile) return null;
 
   return (
     <main>
@@ -48,13 +55,17 @@ export default function RecommendationsPage() {
                   {compareIds.includes(uni.id) ? 'Выбрано' : 'Сравнить'}
                 </button>
               </div>
-              <ul className="mt-3 space-y-1 text-sm">
-                {uni.reasons.map((r, i) => (
-                  <li key={i} className="text-ink-soft">
-                    • {r}
-                  </li>
-                ))}
-              </ul>
+              {aiById[uni.id] ? (
+                <p className="mt-3 text-sm text-ink-soft">{aiById[uni.id]}</p>
+              ) : (
+                <ul className="mt-3 space-y-1 text-sm">
+                  {uni.reasons.map((r, i) => (
+                    <li key={i} className="text-ink-soft">
+                      • {r}
+                    </li>
+                  ))}
+                </ul>
+              )}
               {uni.isAbroad ? (
                 <p className="mt-3 text-xs text-ink-soft italic">🌍 {uni.admissionNote}</p>
               ) : uni.isDemoData ? (
