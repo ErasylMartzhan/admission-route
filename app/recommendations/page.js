@@ -66,8 +66,11 @@ export default function RecommendationsPage() {
                   ))}
                 </ul>
               )}
-              {uni.isAbroad ? (
-                <p className="mt-3 text-xs text-ink-soft italic">🌍 {uni.admissionNote}</p>
+              {uni.admissionNote ? (
+                <p className="mt-3 text-xs text-ink-soft italic">
+                  {uni.isAbroad ? '🌍 ' : 'ℹ️ '}
+                  {uni.admissionNote}
+                </p>
               ) : uni.isDemoData ? (
                 <p className="mt-3 text-xs text-ink-soft italic">
                   Демонстрационные данные — уточните актуальные условия на сайте вуза.
