@@ -36,10 +36,16 @@ export default function ComparePage() {
   }
 
   const rows = [
-    { label: 'Город', get: (u) => u.city },
-    { label: 'Грант', get: (u) => (u.grantAvailable ? 'Доступен' : 'Нет') },
-    { label: 'Стоимость от (KZT/год)', get: (u) => u.tuitionFromKzt.toLocaleString('ru-RU') },
-    { label: 'Проходной балл ЕНТ (демо)', get: (u) => u.entThreshold },
+    { label: 'Город', get: (u) => (u.country !== 'Казахстан' ? `${u.city}, ${u.country}` : u.city) },
+    { label: 'Грант / стипендия', get: (u) => (u.grantAvailable ? 'Доступен' : 'Нет') },
+    {
+      label: 'Стоимость от (KZT/год)',
+      get: (u) => (u.tuitionFromKzt != null ? u.tuitionFromKzt.toLocaleString('ru-RU') : 'уточнить у вуза'),
+    },
+    {
+      label: 'Проходной балл ЕНТ',
+      get: (u) => (u.entThreshold != null ? `~${u.entThreshold} (${u.isDemoData ? 'демо' : '2025'})` : 'не через ЕНТ'),
+    },
     { label: 'Направления', get: (u) => u.directions.join(', ') },
   ];
 

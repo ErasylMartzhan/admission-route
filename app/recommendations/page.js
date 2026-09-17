@@ -34,7 +34,10 @@ export default function RecommendationsPage() {
               <div className="flex justify-between items-start gap-3">
                 <div>
                   <h2 className="font-display text-lg font-semibold">{uni.name}</h2>
-                  <p className="text-ink-soft text-sm">{uni.city}</p>
+                  <p className="text-ink-soft text-sm">
+                    {uni.city}
+                    {uni.isAbroad ? `, ${uni.country}` : ''}
+                  </p>
                 </div>
                 <button
                   onClick={() => toggleCompare(uni.id)}
@@ -52,7 +55,9 @@ export default function RecommendationsPage() {
                   </li>
                 ))}
               </ul>
-              {uni.isDemoData ? (
+              {uni.isAbroad ? (
+                <p className="mt-3 text-xs text-ink-soft italic">🌍 {uni.admissionNote}</p>
+              ) : uni.isDemoData ? (
                 <p className="mt-3 text-xs text-ink-soft italic">
                   Демонстрационные данные — уточните актуальные условия на сайте вуза.
                 </p>

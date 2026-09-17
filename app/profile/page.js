@@ -12,6 +12,7 @@ const EMPTY_FORM = {
   entScore: '',
   budget: 'flexible',
   cities: ['Любой город'],
+  abroad: false,
 };
 
 export default function ProfilePage() {
@@ -135,6 +136,23 @@ export default function ProfilePage() {
               </button>
             ))}
           </div>
+        </fieldset>
+
+        <fieldset>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.abroad}
+              onChange={(e) => setForm((f) => ({ ...f, abroad: e.target.checked }))}
+            />
+            Рассматриваю также обучение за рубежом
+          </label>
+          {form.abroad && (
+            <p className="text-xs text-ink-soft mt-1">
+              Поступление за рубеж обычно не через ЕНТ (IELTS/SAT/эссе/экзамен вуза) — в
+              рекомендациях это будет отмечено отдельно.
+            </p>
+          )}
         </fieldset>
 
         <button
