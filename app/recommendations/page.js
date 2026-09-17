@@ -52,9 +52,17 @@ export default function RecommendationsPage() {
                   </li>
                 ))}
               </ul>
-              {uni.isDemoData && (
+              {uni.isDemoData ? (
                 <p className="mt-3 text-xs text-ink-soft italic">
                   Демонстрационные данные — уточните актуальные условия на сайте вуза.
+                </p>
+              ) : (
+                <p className="mt-3 text-xs text-ink-soft italic">
+                  Проходной балл по данным на 2025 год, может измениться —{' '}
+                  <a href={uni.source} target="_blank" rel="noreferrer" className="underline text-accent">
+                    источник
+                  </a>
+                  {uni.sourceNote ? `. ${uni.sourceNote}` : ''}
                 </p>
               )}
             </div>
