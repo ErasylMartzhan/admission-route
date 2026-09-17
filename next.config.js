@@ -1,13 +1,7 @@
-const isGithubPages = process.env.GITHUB_PAGES === 'true';
-// Меняйте только если репозиторий переименуете — должно совпадать с его именем.
-const repoName = 'admission-route';
-
+// output: 'export' убран — с ним не работают API-роуты (app/api/ai/*),
+// а без сервера AI-часть работать не будет вообще. Деплоим на Vercel:
+// там next build идёт как обычно, ничего вручную настраивать не нужно.
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
-  basePath: isGithubPages ? `/${repoName}` : '',
-  assetPrefix: isGithubPages ? `/${repoName}/` : '',
-};
+const nextConfig = {};
 
 module.exports = nextConfig;
