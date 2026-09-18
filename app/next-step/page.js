@@ -134,14 +134,14 @@ export default function NextStepPage() {
           {/* Кнопки */}
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Button
-              type="secondary"
+              variant="secondary"
               size="lg"
               onClick={() => router.push('/roadmap')}
             >
               ← Вернуться к плану
             </Button>
             <Button
-              type="primary"
+              variant="primary"
               size="lg"
               onClick={() => router.push('/profile')}
             >
@@ -240,7 +240,7 @@ export default function NextStepPage() {
           {/* Кнопка отметить готово */}
           <div className="flex flex-col gap-3">
             <Button
-              type="primary"
+              variant="primary"
               size="lg"
               fullWidth
               onClick={handleMarkComplete}
@@ -249,7 +249,7 @@ export default function NextStepPage() {
               ✓ Я выполнил этот шаг
             </Button>
             <Button
-              type="secondary"
+              variant="secondary"
               size="lg"
               fullWidth
               onClick={() => router.push('/roadmap')}

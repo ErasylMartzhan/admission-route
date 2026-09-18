@@ -187,7 +187,7 @@ export default function RecommendationsPage() {
         {/* Кнопки действия */}
         <div className="flex flex-col md:flex-row gap-4 justify-center mb-12">
           <Button
-            type="secondary"
+            variant="secondary"
             size="lg"
             onClick={() => router.push('/diagnosis')}
             className="order-2 md:order-1"
@@ -196,7 +196,7 @@ export default function RecommendationsPage() {
           </Button>
 
           <Button
-            type="primary"
+            variant="primary"
             size="lg"
             onClick={handleCompare}
             disabled={compareIds.length < 2}
@@ -207,7 +207,6 @@ export default function RecommendationsPage() {
           </Button>
 
           <Button
-            type="secondary"
             size="lg"
             onClick={handleRoadmap}
             variant="ghost"

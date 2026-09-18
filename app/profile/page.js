@@ -269,7 +269,7 @@ export default function ProfilePage() {
           {/* Кнопки действия */}
           <div className="flex flex-col md:flex-row gap-4 justify-center pt-8">
             <Button
-              type="secondary"
+              variant="secondary"
               size="lg"
               onClick={() => router.back()}
               className="order-2 md:order-1"
@@ -277,7 +277,8 @@ export default function ProfilePage() {
               ← Назад
             </Button>
             <Button
-              type="primary"
+              type="submit"
+              variant="primary"
               size="lg"
               disabled={form.interests.length === 0}
               isLoading={isSubmitting}

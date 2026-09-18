@@ -238,7 +238,7 @@ export default function DiagnosisPage() {
         {/* Кнопки действия */}
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           <Button
-            type="secondary"
+            variant="secondary"
             size="lg"
             onClick={() => router.push('/profile')}
             className="order-2 md:order-1"
@@ -246,7 +246,7 @@ export default function DiagnosisPage() {
             ← Вернуться в профиль
           </Button>
           <Button
-            type="primary"
+            variant="primary"
             size="lg"
             onClick={handleContinue}
             isLoading={isTransitioning}

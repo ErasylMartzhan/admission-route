@@ -52,7 +52,7 @@ export default function ComparePage() {
                 <span className="font-bold text-primary-600">{selected.length}</span>
               </p>
               <Button
-                type="primary"
+                variant="primary"
                 size="lg"
                 fullWidth
                 onClick={() => router.push('/recommendations')}
@@ -305,7 +305,7 @@ export default function ComparePage() {
         {/* Кнопки */}
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           <Button
-            type="secondary"
+            variant="secondary"
             size="lg"
             onClick={() => router.push('/recommendations')}
             className="order-2 md:order-1"
@@ -313,7 +313,7 @@ export default function ComparePage() {
             ← Вернуться к рекомендациям
           </Button>
           <Button
-            type="primary"
+            variant="primary"
             size="lg"
             onClick={handleContinue}
             isLoading={isTransitioning}

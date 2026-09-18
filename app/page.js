@@ -32,7 +32,7 @@ export default function HomePage() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button type="primary" size="lg" onClick={() => router.push('/profile')}>
+            <Button variant="primary" size="lg" onClick={() => router.push('/profile')}>
               Начать за 2 минуты →
             </Button>
           </div>
