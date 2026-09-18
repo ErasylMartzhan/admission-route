@@ -160,7 +160,7 @@ export default function RoadmapPage() {
                           </div>
                         </div>
 
-                        <Badge variant={config.variant} size="sm" className="flex-shrink-0">
+                        <Badge variant={config.variant} size="sm" className="self-start flex-shrink-0">
                           {config.label}
                         </Badge>
                       </div>

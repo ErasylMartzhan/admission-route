@@ -88,11 +88,11 @@ export default function DiagnosisPage() {
       <div className="container-md py-8 md:py-12">
         {/* Разбор профиля: AI с откатом на шаблон */}
         <Card padding="lg" className="mb-6">
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="mb-3">
             <h2 className="text-heading-lg font-semibold text-ink">
               Что мы видим в вашем профиле
             </h2>
-            <AiBadge source={aiSource} loading={aiLoading} className="flex-shrink-0 mt-1" />
+            <AiBadge source={aiSource} loading={aiLoading} className="mt-1.5" />
           </div>
 
           {aiLoading ? (

@@ -157,7 +157,7 @@ export default function RecommendationsPage() {
                   </div>
 
                   <div className="py-4 border-b border-line">
-                    <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
                       <h3 className="text-body-sm font-semibold text-ink">Почему этот вуз</h3>
                       <AiBadge source={aiSource} loading={aiLoading} />
                     </div>
