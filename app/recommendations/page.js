@@ -6,6 +6,11 @@ import StepHeader from '@/components/StepHeader';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import Badge from '@/components/Badge';
+import Icon from '@/components/Icon';
+import AiBadge from '@/components/AiBadge';
+import SourceNote from '@/components/SourceNote';
+import EmptyState from '@/components/EmptyState';
+import { SkeletonText } from '@/components/Skeleton';
 import { useProfile } from '@/lib/ProfileContext';
 import { universities } from '@/lib/data/universities';
 import { recommend } from '@/lib/recommend';
@@ -28,207 +33,212 @@ export default function RecommendationsPage() {
     profile && results.length
       ? { profile, items: results.map((r) => ({ id: r.id, name: r.name, reasons: r.reasons })) }
       : null;
-  const { data: aiById } = useAiText('/api/ai/explain', explainPayload, {}, (j) => j.byId);
+  const {
+    data: aiById,
+    source: aiSource,
+    loading: aiLoading,
+  } = useAiText('/api/ai/explain', explainPayload, {}, (j) => j.byId);
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <main className="min-h-screen bg-bg">
+        <StepHeader />
+        <div className="container-md py-12 space-y-4">
+          <Card padding="lg">
+            <SkeletonText lines={3} />
+          </Card>
+          <Card padding="lg">
+            <SkeletonText lines={3} />
+          </Card>
+        </div>
+      </main>
+    );
+  }
 
   const handleCompare = () => {
     setIsTransitioning(true);
-    setTimeout(() => {
-      router.push('/compare');
-    }, 300);
+    setTimeout(() => router.push('/compare'), 300);
   };
 
   const handleRoadmap = () => {
     setIsTransitioning(true);
-    setTimeout(() => {
-      router.push('/roadmap');
-    }, 300);
+    setTimeout(() => router.push('/roadmap'), 300);
   };
 
+  const canCompare = compareIds.length >= 2;
+
+  if (results.length === 0) {
+    return (
+      <main className="min-h-screen bg-bg">
+        <StepHeader />
+        <div className="container-md py-8 md:py-12">
+          <EmptyState
+            icon="scan"
+            title="Под такие условия ничего не подобралось"
+            description="Похоже, фильтры по городу или бюджету получились слишком узкими. Попробуйте добавить направление или выбрать «Любой город» — и подбор пересчитается."
+            actionLabel="Изменить ответы"
+            onAction={() => router.push('/profile')}
+            secondaryLabel="Всё равно посмотреть план"
+            onSecondary={() => router.push('/roadmap')}
+          />
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-bg via-neutral-50 to-bg">
+    <main className="min-h-screen bg-bg">
       <StepHeader />
 
       <div className="container-md py-8 md:py-12">
-        {/* Заголовок */}
-        <div className="text-center mb-12">
-          <div className="text-5xl mb-4">⭐</div>
-          <h1 className="text-display-md font-bold text-neutral-900 mb-3">
-            Рекомендованные вузы
-          </h1>
-          <p className="text-body-lg text-neutral-600 max-w-2xl mx-auto">
-            На основе вашего профиля мы подобрали {results.length} лучших вариантов.
-            Выберите до двух для детального сравнения.
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <p className="text-body-md text-ink-soft">
+            Подобрали {results.length} варианта под ваш профиль. Отметьте два, чтобы сравнить.
           </p>
+          <Badge variant={canCompare ? 'success' : 'neutral'} icon={canCompare ? 'check' : 'columns'}>
+            Выбрано {compareIds.length} из 2
+          </Badge>
         </div>
 
-        {/* Счётчик выбора */}
-        {compareIds.length > 0 && (
-          <div className="mb-8 p-4 bg-primary-50 border border-primary-200 rounded-xl">
-            <p className="text-center text-body-md text-primary-900">
-              📌 Выбрано для сравнения: <span className="font-bold">{compareIds.length}</span>/2
-            </p>
-          </div>
-        )}
-
-        {/* Список вузов */}
-        <div className="space-y-4 md:space-y-6 mb-12">
+        <ol className="space-y-4 mb-8">
           {results.map((uni, index) => {
             const isSelected = compareIds.includes(uni.id);
+            const isBlocked = canCompare && !isSelected;
 
             return (
-              <Card
-                key={uni.id}
-                variant={isSelected ? 'accent' : 'default'}
-                className={`transition-all duration-300 ${isSelected ? 'ring-2 ring-primary-500' : ''}`}
-              >
-                {/* Заголовок и кнопка */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4 pb-4 border-b border-neutral-200">
-                  <div className="flex-1">
-                    {/* Рейтинг/позиция */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="primary" size="sm">
-                        {index + 1}. Рекомендация
-                      </Badge>
-                      {uni.isAbroad && (
-                        <Badge variant="warning" size="sm">
-                          🌍 Международный
+              <li key={uni.id}>
+                <Card padding="lg" selected={isSelected}>
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-4 border-b border-line">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <Badge variant="neutral" size="sm">
+                          Вариант {index + 1}
                         </Badge>
-                      )}
-                    </div>
-
-                    {/* Название вуза */}
-                    <h2 className="text-heading-lg font-bold text-neutral-900">
-                      {uni.name}
-                    </h2>
-
-                    {/* Локация */}
-                    <p className="text-body-md text-neutral-600 mt-2">
-                      📍 {uni.city}
-                      {uni.isAbroad ? `, ${uni.country}` : ''}
-                    </p>
-                  </div>
-
-                  {/* Кнопка выбора */}
-                  <button
-                    onClick={() => toggleCompare(uni.id)}
-                    disabled={compareIds.length >= 2 && !isSelected}
-                    className={`
-                      px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-250 whitespace-nowrap
-                      ${
-                        isSelected
-                          ? 'bg-primary-500 text-white shadow-md'
-                          : compareIds.length >= 2
-                            ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
-                            : 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 border border-neutral-200'
-                      }
-                    `}
-                  >
-                    {isSelected ? '✓ Выбрано' : 'Сравнить'}
-                  </button>
-                </div>
-
-                {/* Причины рекомендации */}
-                <div className="mb-4">
-                  <p className="text-body-sm font-semibold text-neutral-900 mb-3">
-                    ✨ Почему мы рекомендуем:
-                  </p>
-                  {aiById[uni.id] && (
-                    <p className="text-body-md text-neutral-700 leading-relaxed mb-3">
-                      {aiById[uni.id]}
-                    </p>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {uni.reasons.map((reason, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-2 p-2 bg-primary-50 rounded-lg"
-                      >
-                        <span className="text-primary-500 font-bold flex-shrink-0">✓</span>
-                        <p className="text-body-sm text-neutral-700">{reason}</p>
+                        {uni.isAbroad && (
+                          <Badge variant="warning" size="sm" icon="globe">
+                            Зарубежный вуз
+                          </Badge>
+                        )}
+                        {uni.grantAvailable && (
+                          <Badge variant="success" size="sm" icon="check">
+                            Есть гранты
+                          </Badge>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Дополнительная информация */}
-                <div className="pt-4 border-t border-neutral-200">
-                  {uni.isAbroad ? (
-                    <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
-                      <p className="text-body-sm text-warning-900">
-                        <span className="font-semibold">🌍 Обучение за рубежом:</span> {uni.admissionNote}
+                      <h2 className="text-heading-lg font-bold text-ink">{uni.name}</h2>
+
+                      <p className="flex items-center gap-1.5 text-body-sm text-ink-soft mt-2">
+                        <Icon name="pin" className="w-4 h-4 flex-shrink-0" />
+                        {uni.city}
+                        {uni.isAbroad ? `, ${uni.country}` : ''}
                       </p>
                     </div>
-                  ) : uni.isDemoData ? (
-                    <p className="text-body-xs text-neutral-600">
-                      ℹ️ Демонстрационные данные — уточните актуальные условия на сайте вуза.
-                    </p>
-                  ) : (
-                    <p className="text-body-xs text-neutral-600">
-                      📌 Проходной балл на 2025 год. Может измениться —{' '}
-                      <a
-                        href={uni.source}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary-500 font-semibold hover:underline"
-                      >
-                        источник
-                      </a>
-                      {uni.sourceNote ? `. ${uni.sourceNote}` : ''}
-                    </p>
-                  )}
-                </div>
-              </Card>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleCompare(uni.id)}
+                      disabled={isBlocked}
+                      aria-pressed={isSelected}
+                      title={isBlocked ? 'Уже выбрано два вуза — снимите отметку с одного' : undefined}
+                      className={`inline-flex items-center justify-center gap-2 min-h-tap px-4 py-2.5 rounded-md
+                        text-body-sm font-semibold whitespace-nowrap border flex-shrink-0
+                        transition-all duration-base focus-ring
+                        disabled:opacity-45 disabled:cursor-not-allowed
+                        ${
+                          isSelected
+                            ? 'bg-primary-500 text-ink-inverse border-primary-500 hover:bg-primary-600 active:bg-primary-700'
+                            : 'bg-surface text-ink border-line-strong hover:border-primary-300 hover:bg-primary-50 active:bg-primary-100'
+                        }`}
+                    >
+                      <Icon name={isSelected ? 'check' : 'plus'} className="w-4 h-4" strokeWidth={2} />
+                      {isSelected ? 'В сравнении' : 'Добавить к сравнению'}
+                    </button>
+                  </div>
+
+                  <div className="py-4 border-b border-line">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <h3 className="text-body-sm font-semibold text-ink">Почему этот вуз</h3>
+                      <AiBadge source={aiSource} loading={aiLoading} />
+                    </div>
+
+                    {aiLoading ? (
+                      <SkeletonText lines={2} className="mb-3" />
+                    ) : (
+                      aiById[uni.id] && (
+                        <p className="text-body-md text-ink-soft leading-relaxed mb-3">
+                          {aiById[uni.id]}
+                        </p>
+                      )
+                    )}
+
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {uni.reasons.map((reason, i) => (
+                        <li key={i} className="flex items-start gap-2 p-2.5 bg-surface-subtle rounded-md">
+                          <span className="text-success-600 flex-shrink-0 mt-0.5">
+                            <Icon name="check" className="w-4 h-4" strokeWidth={2} />
+                          </span>
+                          <span className="text-body-sm text-ink-soft">{reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="pt-4">
+                    {uni.isAbroad ? (
+                      <SourceNote>{uni.admissionNote}</SourceNote>
+                    ) : uni.isDemoData ? (
+                      <SourceNote>
+                        Порог ЕНТ {uni.entThreshold} — демонстрационные данные прототипа. Перед
+                        подачей сверьтесь с сайтом вуза.
+                      </SourceNote>
+                    ) : (
+                      <SourceNote variant="source" href={uni.source}>
+                        Порог ЕНТ {uni.entThreshold}, набор 2025 года — каждый год меняется.
+                        {uni.sourceNote ? ` ${uni.sourceNote}` : ''}
+                      </SourceNote>
+                    )}
+                  </div>
+                </Card>
+              </li>
             );
           })}
-        </div>
+        </ol>
 
-        {/* Кнопки действия */}
-        <div className="flex flex-col md:flex-row gap-4 justify-center mb-12">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <Button
-            variant="secondary"
-            size="lg"
-            onClick={() => router.push('/diagnosis')}
-            className="order-2 md:order-1"
-          >
-            ← Назад к диагностике
-          </Button>
-
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleCompare}
-            disabled={compareIds.length < 2}
-            isLoading={isTransitioning && compareIds.length >= 2}
-            className="order-1 md:order-2"
-          >
-            Сравнить {compareIds.length}/2 →
-          </Button>
-
-          <Button
-            size="lg"
-            onClick={handleRoadmap}
             variant="ghost"
-            className="order-3 md:order-3"
+            size="lg"
+            icon="arrowLeft"
+            iconPosition="left"
+            onClick={() => router.push('/diagnosis')}
           >
-            Сразу к roadmap
+            Назад к диагностике
           </Button>
+
+          <div className="flex flex-col-reverse md:flex-row gap-3">
+            <Button variant="outline" size="lg" onClick={handleRoadmap}>
+              Сразу к плану
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              icon="arrowRight"
+              onClick={handleCompare}
+              disabled={!canCompare}
+              isLoading={isTransitioning && canCompare}
+              loadingText="Открываем сравнение…"
+            >
+              Сравнить выбранные
+            </Button>
+          </div>
         </div>
 
-        {/* Подсказка */}
-        <Card variant="accent">
-          <div className="flex gap-3">
-            <span className="text-2xl flex-shrink-0">💡</span>
-            <div>
-              <p className="font-semibold text-neutral-900">Совет</p>
-              <p className="text-body-sm text-neutral-700 mt-1">
-                Выберите 2 вуза для детального сравнения условий поступления, программ и стоимости.
-                Это поможет вам выбрать оптимальный вариант.
-              </p>
-            </div>
-          </div>
-        </Card>
+        {!canCompare && (
+          <p className="text-body-sm text-ink-muted mt-3 md:text-right">
+            Чтобы открыть сравнение, отметьте два вуза. Или переходите сразу к плану.
+          </p>
+        )}
       </div>
     </main>
   );

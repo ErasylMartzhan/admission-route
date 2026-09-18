@@ -6,8 +6,22 @@ import StepHeader from '@/components/StepHeader';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import Badge from '@/components/Badge';
+import Icon from '@/components/Icon';
+import SourceNote from '@/components/SourceNote';
+import { SkeletonText } from '@/components/Skeleton';
 import { useProfile } from '@/lib/ProfileContext';
 import { buildRoadmap } from '@/lib/roadmap';
+
+function getStepIcon(title) {
+  const t = title.toLowerCase();
+  if (t.includes('экзамен') || t.includes('тест')) return 'target';
+  if (t.includes('документ') || t.includes('анкета')) return 'document';
+  if (t.includes('заявк') || t.includes('регистр')) return 'list';
+  if (t.includes('интервью') || t.includes('собеседование')) return 'user';
+  if (t.includes('подготов')) return 'graduation';
+  if (t.includes('результат') || t.includes('ответ')) return 'flag';
+  return 'flag';
+}
 
 export default function NextStepPage() {
   const { profile, loaded, roadmapProgress, setRoadmapStep } = useProfile();
@@ -20,7 +34,18 @@ export default function NextStepPage() {
     }
   }, [loaded, profile, router]);
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <main className="min-h-screen bg-bg">
+        <StepHeader />
+        <div className="container-md py-12">
+          <Card padding="lg">
+            <SkeletonText lines={4} />
+          </Card>
+        </div>
+      </main>
+    );
+  }
 
   const steps = buildRoadmap(profile);
   const next = steps.find((s) => !roadmapProgress[s.id]);
@@ -30,122 +55,68 @@ export default function NextStepPage() {
   const handleMarkComplete = () => {
     setIsMarking(true);
     setRoadmapStep(next.id, true);
-    setTimeout(() => {
-      setIsMarking(false);
-    }, 300);
+    setTimeout(() => setIsMarking(false), 300);
   };
 
-  // Финальный экран - все шаги выполнены
   if (!next) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-success-50 via-bg to-success-50 flex flex-col">
+      <main className="min-h-screen bg-bg">
         <StepHeader />
 
-        <div className="container-md py-8 md:py-12 flex-1 flex flex-col items-center justify-center">
-          {/* Анимированная иконка */}
-          <div className="text-center mb-12">
-            <div className="inline-block mb-6">
-              <div className="text-8xl animate-bounce mb-2">🎉</div>
-              <div className="text-6xl">✨</div>
-            </div>
-
-            <h1 className="text-display-lg font-bold text-neutral-900 mb-4">
-              Вы готовы!
-            </h1>
-            <p className="text-heading-md text-success-600 font-semibold mb-2">
-              Все шаги выполнены на 100%
-            </p>
-            <p className="text-body-lg text-neutral-600 max-w-2xl">
-              Поздравляем! Вы прошли весь путь подготовки к поступлению.
-              Теперь осталось дождаться результатов и верить в успех! 🌟
-            </p>
-          </div>
-
-          {/* Статистика */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 w-full">
-            <Card size="lg" variant="accent">
-              <div className="text-center">
-                <div className="text-4xl mb-3">📝</div>
-                <p className="text-heading-md font-bold text-primary-600">
-                  {totalSteps}
-                </p>
-                <p className="text-body-sm text-neutral-600 mt-1">
-                  Всего задач
+        <div className="container-md py-8 md:py-12">
+          <Card variant="success" padding="lg" className="mb-6">
+            <div className="flex items-start gap-4">
+              <span className="flex items-center justify-center w-12 h-12 rounded-full bg-success-500 text-ink-inverse flex-shrink-0">
+                <Icon name="checkCircle" className="w-6 h-6" />
+              </span>
+              <div>
+                <h2 className="text-display-sm font-bold text-ink">
+                  План пройден полностью
+                </h2>
+                <p className="text-body-md text-ink-soft mt-2">
+                  Все {totalSteps} шагов отмечены. Подготовительная часть закончена — дальше
+                  результат зависит от приёмной комиссии, а не от плана.
                 </p>
               </div>
-            </Card>
-
-            <Card size="lg" variant="accent">
-              <div className="text-center">
-                <div className="text-4xl mb-3">✓</div>
-                <p className="text-heading-md font-bold text-success-600">
-                  {completedCount}
-                </p>
-                <p className="text-body-sm text-neutral-600 mt-1">
-                  Выполнено
-                </p>
-              </div>
-            </Card>
-
-            <Card size="lg" variant="accent">
-              <div className="text-center">
-                <div className="text-4xl mb-3">🎯</div>
-                <p className="text-heading-md font-bold text-primary-600">
-                  100%
-                </p>
-                <p className="text-body-sm text-neutral-600 mt-1">
-                  Завершено
-                </p>
-              </div>
-            </Card>
-          </div>
-
-          {/* Сообщение */}
-          <Card size="lg" className="max-w-lg w-full mb-12 bg-gradient-to-br from-success-50 to-primary-50 border-success-200">
-            <div className="text-center space-y-4">
-              <div className="text-5xl">🚀</div>
-              <h2 className="text-heading-lg font-bold text-neutral-900">
-                Вперед к успеху!
-              </h2>
-              <p className="text-body-md text-neutral-700">
-                Вы выполнили все необходимые шаги. Теперь:
-              </p>
-              <ul className="text-body-sm text-neutral-700 text-left space-y-2 bg-white/50 rounded-lg p-4">
-                <li className="flex gap-2">
-                  <span className="text-success-600">✓</span>
-                  <span>Поддерживайте контакт с приёмными комиссиями вузов</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-success-600">✓</span>
-                  <span>Следите за объявлениями о результатах</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-success-600">✓</span>
-                  <span>Подготовьте документы для регистрации в вузе</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-success-600">✓</span>
-                  <span>Обсудите жилищные вопросы и общежитие</span>
-                </li>
-              </ul>
             </div>
           </Card>
 
-          {/* Кнопки */}
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <Card padding="lg" className="mb-6">
+            <h2 className="text-heading-lg font-semibold text-ink mb-3">Что делать дальше</h2>
+            <ul className="space-y-2.5">
+              {[
+                'Держите связь с приёмной комиссией выбранного вуза.',
+                'Следите за публикацией результатов на официальном сайте.',
+                'Соберите документы для зачисления заранее, не в последний день.',
+                'Уточните вопрос с общежитием — места распределяют отдельно.',
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5">
+                  <span className="text-success-600 flex-shrink-0 mt-0.5">
+                    <Icon name="check" className="w-4 h-4" strokeWidth={2} />
+                  </span>
+                  <span className="text-body-md text-ink-soft">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <div className="flex flex-col-reverse md:flex-row md:justify-between gap-3">
             <Button
-              variant="secondary"
+              variant="ghost"
               size="lg"
+              icon="arrowLeft"
+              iconPosition="left"
               onClick={() => router.push('/roadmap')}
             >
-              ← Вернуться к плану
+              Вернуться к плану
             </Button>
             <Button
               variant="primary"
               size="lg"
+              icon="refresh"
               onClick={() => router.push('/profile')}
             >
-              Начать заново →
+              Пройти маршрут заново
             </Button>
           </div>
         </div>
@@ -153,125 +124,78 @@ export default function NextStepPage() {
     );
   }
 
-  // Следующий шаг - показываем его
+  const stepNumber = steps.findIndex((s) => s.id === next.id) + 1;
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-bg via-neutral-50 to-bg">
+    <main className="min-h-screen bg-bg">
       <StepHeader />
 
       <div className="container-md py-8 md:py-12">
-        {/* Заголовок */}
-        <div className="text-center mb-12">
-          <div className="text-5xl mb-4">👉</div>
-          <h1 className="text-display-md font-bold text-neutral-900 mb-2">
-            Ваш следующий шаг
-          </h1>
-          <p className="text-body-lg text-neutral-600">
-            Выполните это действие, чтобы продвинуться вперёд
-          </p>
-
-          {/* Прогресс */}
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <Badge variant="primary" size="md">
-              Шаг {steps.findIndex((s) => s.id === next.id) + 1} из {totalSteps}
-            </Badge>
-            <Badge variant="success" size="md">
-              {completedCount} завершено
-            </Badge>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <Badge variant="primary" icon="flag">
+            Шаг {stepNumber} из {totalSteps}
+          </Badge>
+          <Badge variant="neutral">Отмечено выполненными: {completedCount}</Badge>
         </div>
 
-        {/* Основная карточка шага */}
-        <Card size="lg" className="max-w-2xl mx-auto mb-12 bg-gradient-to-br from-white to-primary-50 border-primary-200">
-          {/* Иконка и название */}
-          <div className="mb-6 pb-6 border-b border-primary-200">
-            <div className="flex items-start gap-4">
-              <div className="text-5xl flex-shrink-0">
-                {(() => {
-                  const title = next.title.toLowerCase();
-                  if (title.includes('экзамен') || title.includes('тест'))
-                    return '📝';
-                  if (title.includes('документ') || title.includes('анкета'))
-                    return '📄';
-                  if (title.includes('заявк') || title.includes('регистр'))
-                    return '✍️';
-                  if (
-                    title.includes('интервью') ||
-                    title.includes('собеседование')
-                  )
-                    return '💬';
-                  if (title.includes('подготов'))
-                    return '📚';
-                  if (title.includes('результат') || title.includes('ответ'))
-                    return '📬';
-                  return '🎯';
-                })()}
-              </div>
-              <div className="flex-1">
-                <h2 className="text-display-sm font-bold text-neutral-900">
-                  {next.title}
-                </h2>
-                <p className="text-body-md text-primary-600 font-semibold mt-2">
-                  ⏰ {next.due}
-                </p>
-              </div>
+        <Card padding="lg" className="mb-6">
+          <div className="flex items-start gap-4 pb-5 border-b border-line">
+            <span className="flex items-center justify-center w-12 h-12 rounded-md bg-primary-50 text-primary-600 flex-shrink-0">
+              <Icon name={getStepIcon(next.title)} className="w-6 h-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-display-sm font-bold text-ink">{next.title}</h2>
+              <p className="flex items-center gap-1.5 text-body-sm font-medium text-primary-600 mt-2">
+                <Icon name="clock" className="w-4 h-4 flex-shrink-0" />
+                {next.due}
+              </p>
             </div>
           </div>
 
-          {/* Описание */}
-          <div className="mb-8">
-            <p className="text-body-lg text-neutral-700 leading-relaxed">
-              {next.desc}
-            </p>
-          </div>
+          <p className="text-body-lg text-ink-soft leading-relaxed py-5">{next.desc}</p>
 
-          {/* Важные моменты */}
-          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
-            <p className="text-body-sm font-semibold text-warning-900 mb-2">
-              ⚠️ Важно помнить:
-            </p>
+          <div className="rounded-md border border-warning-200 bg-warning-50 p-4 mb-6">
+            <h3 className="flex items-center gap-2 text-body-sm font-semibold text-warning-900 mb-2">
+              <Icon name="alert" className="w-4 h-4 flex-shrink-0" />
+              О чём легко забыть
+            </h3>
             <ul className="text-body-sm text-warning-900 space-y-1">
-              <li>• Не пропустите срок выполнения</li>
-              <li>• Внимательно прочитайте инструкции</li>
-              <li>• Сохраняйте копии документов</li>
-              <li>• При возникновении вопросов свяжитесь с вузом</li>
+              <li>Проверьте срок на официальном сайте — он мог сдвинуться.</li>
+              <li>Сохраняйте копии всех поданных документов.</li>
+              <li>Непонятный пункт лучше уточнить в приёмной комиссии, чем угадать.</li>
             </ul>
           </div>
 
-          {/* Кнопка отметить готово */}
           <div className="flex flex-col gap-3">
             <Button
               variant="primary"
               size="lg"
               fullWidth
+              icon="check"
+              iconPosition="left"
               onClick={handleMarkComplete}
               isLoading={isMarking}
+              loadingText="Отмечаем…"
             >
-              ✓ Я выполнил этот шаг
+              Я выполнил этот шаг
             </Button>
             <Button
-              variant="secondary"
+              variant="ghost"
               size="lg"
               fullWidth
+              icon="arrowLeft"
+              iconPosition="left"
               onClick={() => router.push('/roadmap')}
             >
-              ← Вернуться к плану
+              Вернуться к плану
             </Button>
           </div>
         </Card>
 
-        {/* Совет */}
-        <Card variant="accent" className="max-w-2xl mx-auto">
-          <div className="flex gap-3">
-            <span className="text-2xl flex-shrink-0">💡</span>
-            <div>
-              <p className="font-semibold text-neutral-900">Совет</p>
-              <p className="text-body-sm text-neutral-700 mt-1">
-                Если вам нужна помощь с этим шагом, не стесняйтесь обратиться в
-                приёмную комиссию вуза. Они всегда готовы помочь абитуриентам!
-              </p>
-            </div>
-          </div>
-        </Card>
+        <SourceNote>
+          Срок этого шага — ориентировочный и демонстрационный. Официальные даты публикуют вуз
+          и НЦТ.
+        </SourceNote>
       </div>
     </main>
   );

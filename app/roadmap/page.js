@@ -6,8 +6,38 @@ import StepHeader from '@/components/StepHeader';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import Badge from '@/components/Badge';
+import Icon from '@/components/Icon';
+import SourceNote from '@/components/SourceNote';
+import { SkeletonText } from '@/components/Skeleton';
 import { useProfile } from '@/lib/ProfileContext';
 import { buildRoadmap } from '@/lib/roadmap';
+
+const priorityConfig = {
+  high: { variant: 'error', label: 'Критично' },
+  medium: { variant: 'warning', label: 'Важно' },
+  low: { variant: 'neutral', label: 'Дополнительно' },
+};
+
+function getStepIcon(title) {
+  const t = title.toLowerCase();
+  if (t.includes('экзамен') || t.includes('тест')) return 'target';
+  if (t.includes('документ') || t.includes('анкета')) return 'document';
+  if (t.includes('заявк') || t.includes('регистр')) return 'list';
+  if (t.includes('интервью') || t.includes('собеседование')) return 'user';
+  if (t.includes('подготов')) return 'graduation';
+  if (t.includes('результат') || t.includes('ответ')) return 'flag';
+  return 'flag';
+}
+
+// Приоритет задаётся в данных (lib/roadmap.js): 'high' — жёсткий дедлайн, пропустить нельзя.
+// Ключевые слова в описании оставлены как запасной вариант для шагов без явного приоритета.
+function getPriority(step) {
+  if (step.priority) return step.priority;
+  const desc = (step.desc || '').toLowerCase();
+  if (desc.includes('обязательно') || desc.includes('критич')) return 'high';
+  if (desc.includes('рекомендуется')) return 'medium';
+  return 'low';
+}
 
 export default function RoadmapPage() {
   const { profile, loaded, roadmapProgress, setRoadmapStep } = useProfile();
@@ -20,7 +50,18 @@ export default function RoadmapPage() {
     }
   }, [loaded, profile, router]);
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <main className="min-h-screen bg-bg">
+        <StepHeader />
+        <div className="container-md py-12">
+          <Card padding="lg">
+            <SkeletonText lines={5} />
+          </Card>
+        </div>
+      </main>
+    );
+  }
 
   const steps = buildRoadmap(profile);
   const completedCount = Object.values(roadmapProgress).filter(Boolean).length;
@@ -28,286 +69,135 @@ export default function RoadmapPage() {
 
   const handleContinue = () => {
     setIsTransitioning(true);
-    setTimeout(() => {
-      router.push('/next-step');
-    }, 300);
-  };
-
-  // Определяем иконки для разных типов шагов
-  const getStepIcon = (title) => {
-    if (title.toLowerCase().includes('экзамен') || title.toLowerCase().includes('тест'))
-      return '📝';
-    if (title.toLowerCase().includes('документ') || title.toLowerCase().includes('анкета'))
-      return '📄';
-    if (title.toLowerCase().includes('заявк') || title.toLowerCase().includes('регистр'))
-      return '✍️';
-    if (title.toLowerCase().includes('интервью') || title.toLowerCase().includes('собеседование'))
-      return '💬';
-    if (title.toLowerCase().includes('подготов'))
-      return '📚';
-    if (title.toLowerCase().includes('результат') || title.toLowerCase().includes('ответ'))
-      return '📬';
-    return '🎯';
-  };
-
-  // Приоритет задаётся в данных (lib/roadmap.js): 'high' — жёсткий дедлайн, пропустить нельзя.
-  // Ключевые слова в описании оставлены как запасной вариант для шагов без явного приоритета.
-  const getPriority = (step) => {
-    if (step.priority) return step.priority;
-    const desc = (step.desc || '').toLowerCase();
-    if (desc.includes('обязательно') || desc.includes('критич')) return 'high';
-    if (desc.includes('рекомендуется')) return 'medium';
-    return 'low';
+    setTimeout(() => router.push('/next-step'), 300);
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-bg via-neutral-50 to-bg">
+    <main className="min-h-screen bg-bg">
       <StepHeader />
 
       <div className="container-md py-8 md:py-12">
-        {/* Заголовок */}
-        <div className="text-center mb-12">
-          <div className="text-5xl mb-4">🗺️</div>
-          <h1 className="text-display-md font-bold text-neutral-900 mb-2">
-            Ваш маршрут поступления
-          </h1>
-          <p className="text-body-lg text-neutral-600 max-w-2xl mx-auto">
-            Пошаговый план действий для успешного поступления в выбранный вуз
-          </p>
-        </div>
-
-        {/* Прогресс */}
-        <Card size="lg" variant="accent" className="mb-10">
-          <div className="flex items-center justify-between mb-4">
+        <Card padding="lg" className="mb-6">
+          <div className="flex items-end justify-between gap-4 mb-4">
             <div>
-              <p className="text-body-sm font-semibold text-neutral-700 mb-1">
-                Ваш прогресс
+              <p className="text-caption font-semibold uppercase tracking-wider text-ink-muted mb-1">
+                Прогресс подготовки
               </p>
-              <p className="text-heading-lg font-bold text-primary-600">
+              <p className="text-heading-lg font-bold text-ink">
                 {completedCount} из {steps.length} шагов
               </p>
             </div>
-            <div className="text-center">
-              <div className="text-display-sm font-bold text-primary-500">
-                {progressPercent}%
-              </div>
-              <p className="text-caption text-neutral-600">готово</p>
-            </div>
+            <p className="text-display-sm font-bold text-primary-600 leading-none">
+              {progressPercent}%
+            </p>
           </div>
 
-          {/* Прогресс бар */}
-          <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
+          <div
+            className="w-full bg-neutral-200 rounded-full h-2.5 overflow-hidden"
+            role="progressbar"
+            aria-valuenow={completedCount}
+            aria-valuemin={0}
+            aria-valuemax={steps.length}
+            aria-label="Выполнено шагов плана"
+          >
             <div
-              className="bg-gradient-to-r from-primary-500 to-success-500 h-full rounded-full transition-all duration-500 ease-out"
+              className="bg-primary-500 h-full rounded-full transition-all duration-slow"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
+
+          <p className="text-body-sm text-ink-soft mt-4">
+            Отмечайте шаги по мере выполнения — прогресс сохраняется в вашем браузере.
+          </p>
         </Card>
 
-        {/* Легенда приоритетов */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-          <div className="flex items-center gap-2 text-body-sm">
-            <div className="w-3 h-3 rounded-full bg-error-500" />
-            <span className="text-neutral-700">Критично</span>
-          </div>
-          <div className="flex items-center gap-2 text-body-sm">
-            <div className="w-3 h-3 rounded-full bg-warning-500" />
-            <span className="text-neutral-700">Важно</span>
-          </div>
-          <div className="flex items-center gap-2 text-body-sm">
-            <div className="w-3 h-3 rounded-full bg-neutral-300" />
-            <span className="text-neutral-700">Дополнительно</span>
-          </div>
-        </div>
-
-        {/* Timeline шагов */}
-        <div className="space-y-4 mb-12">
+        <ol className="space-y-3 mb-8">
           {steps.map((step, index) => {
             const isCompleted = !!roadmapProgress[step.id];
-            const icon = getStepIcon(step.title);
             const priority = getPriority(step);
-
-            const priorityConfig = {
-              high: { color: 'error', label: 'Критично' },
-              medium: { color: 'warning', label: 'Важно' },
-              low: { color: 'neutral', label: 'Дополнительно' },
-            };
-
             const config = priorityConfig[priority];
 
             return (
-              <div key={step.id} className="relative">
-                {/* Линия между шагами */}
-                {index < steps.length - 1 && (
-                  <div
-                    className={`absolute left-7 top-20 w-1 h-12 ${
-                      isCompleted ? 'bg-success-400' : 'bg-neutral-200'
-                    }`}
-                  />
-                )}
-
+              <li key={step.id}>
                 <Card
-                  className={`transition-all duration-300 ${
-                    isCompleted
-                      ? 'bg-success-50 border-success-200'
-                      : 'hover:shadow-md'
-                  }`}
+                  padding="md"
+                  variant={isCompleted ? 'success' : 'default'}
+                  className="transition-colors duration-base"
                 >
-                  <div className="flex gap-4">
-                    {/* Чекбокс */}
-                    <div className="flex-shrink-0 pt-1">
-                      <label className="flex items-center justify-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isCompleted}
-                          onChange={(e) =>
-                            setRoadmapStep(step.id, e.target.checked)
-                          }
-                          className="w-6 h-6 rounded-full border-2 border-current appearance-none cursor-pointer transition-all checked:bg-success-500 checked:border-success-500"
-                          style={{
-                            accentColor: '#22C55E',
-                          }}
-                        />
-                      </label>
-                    </div>
+                  <label className="flex gap-4 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isCompleted}
+                      onChange={(e) => setRoadmapStep(step.id, e.target.checked)}
+                      className="w-6 h-6 mt-0.5 flex-shrink-0 rounded accent-success-500 cursor-pointer focus-ring"
+                    />
 
-                    {/* Контент */}
-                    <div className="flex-1">
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-2">
-                        <div className="flex items-start gap-2 flex-1">
-                          <span className="text-2xl flex-shrink-0">{icon}</span>
-                          <div className="flex-1">
-                            <h3
-                              className={`text-heading-sm font-bold ${
-                                isCompleted
-                                  ? 'text-neutral-600 line-through'
-                                  : 'text-neutral-900'
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <span
+                            className={`flex-shrink-0 mt-0.5 ${
+                              isCompleted ? 'text-success-600' : 'text-ink-muted'
+                            }`}
+                          >
+                            <Icon
+                              name={isCompleted ? 'checkCircle' : getStepIcon(step.title)}
+                              className="w-5 h-5"
+                            />
+                          </span>
+                          <div className="min-w-0">
+                            <h2
+                              className={`text-heading-md font-semibold ${
+                                isCompleted ? 'text-ink-muted line-through' : 'text-ink'
                               }`}
                             >
                               {index + 1}. {step.title}
-                            </h3>
-
-                            {/* Срок */}
-                            <p className="text-body-xs text-neutral-600 mt-1">
-                              ⏰ {step.due}
+                            </h2>
+                            <p className="flex items-center gap-1.5 text-body-xs text-ink-muted mt-1">
+                              <Icon name="clock" className="w-3.5 h-3.5 flex-shrink-0" />
+                              {step.due}
                             </p>
                           </div>
                         </div>
 
-                        {/* Бейджи */}
-                        <div className="flex flex-wrap gap-2">
-                          <Badge
-                            variant={
-                              priority === 'high'
-                                ? 'error'
-                                : priority === 'medium'
-                                  ? 'warning'
-                                  : 'primary'
-                            }
-                            size="sm"
-                          >
-                            {config.label}
-                          </Badge>
-
-                          {isCompleted && (
-                            <Badge variant="success" size="sm">
-                              ✓ Готово
-                            </Badge>
-                          )}
-                        </div>
+                        <Badge variant={config.variant} size="sm" className="flex-shrink-0">
+                          {config.label}
+                        </Badge>
                       </div>
 
-                      {/* Описание */}
-                      <p
-                        className={`text-body-sm ${
-                          isCompleted
-                            ? 'text-neutral-600'
-                            : 'text-neutral-700'
-                        }`}
-                      >
-                        {step.desc}
-                      </p>
+                      <p className="text-body-sm text-ink-soft mt-2">{step.desc}</p>
                     </div>
-                  </div>
+                  </label>
                 </Card>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
 
-        {/* Статистика */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-          <Card size="lg">
-            <div className="text-center">
-              <div className="text-3xl mb-2">✓</div>
-              <p className="text-heading-md font-bold text-success-600">
-                {completedCount}
-              </p>
-              <p className="text-body-sm text-neutral-600 mt-1">
-                Выполнено
-              </p>
-            </div>
-          </Card>
+        <SourceNote className="mb-8">
+          Сроки в плане — ориентировочные и демонстрационные: точные даты приёма документов
+          и экзаменов публикует вуз и НЦТ. Сверяйтесь с официальным календарём.
+        </SourceNote>
 
-          <Card size="lg">
-            <div className="text-center">
-              <div className="text-3xl mb-2">⏳</div>
-              <p className="text-heading-md font-bold text-primary-600">
-                {steps.length - completedCount}
-              </p>
-              <p className="text-body-sm text-neutral-600 mt-1">
-                В процессе
-              </p>
-            </div>
-          </Card>
-
-          <Card size="lg">
-            <div className="text-center">
-              <div className="text-3xl mb-2">📊</div>
-              <p className="text-heading-md font-bold text-neutral-600">
-                {progressPercent}%
-              </p>
-              <p className="text-body-sm text-neutral-600 mt-1">
-                Завершено
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Совет */}
-        <Card variant="accent" className="mb-12">
-          <div className="flex gap-3">
-            <span className="text-2xl flex-shrink-0">💡</span>
-            <div>
-              <p className="font-semibold text-neutral-900">Советы для успеха</p>
-              <ul className="text-body-sm text-neutral-700 mt-2 space-y-1">
-                <li>✓ Отмечайте шаги по мере их выполнения</li>
-                <li>✓ Приоритизируйте критичные шаги (красные)</li>
-                <li>✓ Планируйте время заранее, не откладывайте на последний момент</li>
-                <li>✓ Свяжитесь с вузом, если что-то непонятно</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
-
-        {/* Кнопки */}
-        <div className="flex flex-col md:flex-row gap-4 justify-center">
+        <div className="flex flex-col-reverse md:flex-row md:justify-between gap-3">
           <Button
-            variant="secondary"
+            variant="ghost"
             size="lg"
+            icon="arrowLeft"
+            iconPosition="left"
             onClick={() => router.push('/compare')}
-            className="order-2 md:order-1"
           >
-            ← Вернуться к сравнению
+            Назад к сравнению
           </Button>
           <Button
             variant="primary"
             size="lg"
+            icon="arrowRight"
             onClick={handleContinue}
             isLoading={isTransitioning}
-            className="order-1 md:order-2"
+            loadingText="Открываем…"
           >
-            Финальные советы →
+            С чего начать прямо сейчас
           </Button>
         </div>
       </div>
