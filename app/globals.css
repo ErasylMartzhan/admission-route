@@ -6,8 +6,9 @@
    Здесь их переопределять нельзя: Sora не поддерживает кириллицу, и весь русский
    текст откатывался бы на системный шрифт. */
 :root {
-  --color-primary: #0F8B7E;
-  --color-bg: #F5F6F2;
+  --color-primary: #6C5CE7;
+  --color-bg: #F7F7FC;
+  --color-ink: #1A1830;
 }
 
 * {
@@ -21,7 +22,7 @@ html {
 
 body {
   background-color: var(--color-bg);
-  color: #111827;
+  color: var(--color-ink);
   font-family: var(--font-body);
   line-height: 1.6;
 }
@@ -35,7 +36,7 @@ h6 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.3;
-  color: #111827;
+  color: var(--color-ink);
 }
 
 a {
@@ -49,18 +50,45 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Общий контейнер контента — используется на всех экранах.
-   Держит читаемую ширину на десктопе и боковые отступы на телефоне. */
-.container-md {
-  width: 100%;
-  max-width: 48rem;
-  margin-inline: auto;
-  padding-inline: 1rem;
-}
-
-@media (min-width: 768px) {
+@layer components {
+  /* Общий контейнер контента — используется на всех экранах.
+     Держит читаемую ширину на десктопе и боковые отступы на телефоне. */
   .container-md {
-    padding-inline: 1.5rem;
+    width: 100%;
+    max-width: 48rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-md {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  /* Единое кольцо фокуса для всех интерактивных элементов.
+     Только focus-visible: мышью кольцо не появляется, с клавиатуры — всегда. */
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+  }
+
+  /* Плейсхолдер загрузки. Блик отключается при prefers-reduced-motion. */
+  .skeleton {
+    @apply relative overflow-hidden bg-neutral-200 rounded-sm;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 1.4s infinite;
   }
 }
 
@@ -84,12 +112,33 @@ a:hover {
   }
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .animate-slideIn {
-  animation: slideIn 0.3s ease-in-out;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Уважаем системную настройку «меньше движения» */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -98,14 +147,14 @@ a:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #F1F1F7;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #9ca3af;
+  background: #D2D0E0;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #9D9BB3;
 }
