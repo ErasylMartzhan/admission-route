@@ -50,12 +50,13 @@ export default function RoadmapPage() {
     return '🎯';
   };
 
-  // Определяем приоритет шага (критичный, важный, обычный)
-  const getPriority = (desc) => {
-    if (desc.toLowerCase().includes('обязательно') || desc.toLowerCase().includes('критич'))
-      return 'high';
-    if (desc.toLowerCase().includes('рекомендуется'))
-      return 'medium';
+  // Приоритет задаётся в данных (lib/roadmap.js): 'high' — жёсткий дедлайн, пропустить нельзя.
+  // Ключевые слова в описании оставлены как запасной вариант для шагов без явного приоритета.
+  const getPriority = (step) => {
+    if (step.priority) return step.priority;
+    const desc = (step.desc || '').toLowerCase();
+    if (desc.includes('обязательно') || desc.includes('критич')) return 'high';
+    if (desc.includes('рекомендуется')) return 'medium';
     return 'low';
   };
 
@@ -124,7 +125,7 @@ export default function RoadmapPage() {
           {steps.map((step, index) => {
             const isCompleted = !!roadmapProgress[step.id];
             const icon = getStepIcon(step.title);
-            const priority = getPriority(step.desc);
+            const priority = getPriority(step);
 
             const priorityConfig = {
               high: { color: 'error', label: 'Критично' },

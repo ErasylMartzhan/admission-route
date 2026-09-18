@@ -8,6 +8,7 @@ import Card from '@/components/Card';
 import Badge from '@/components/Badge';
 import { useProfile } from '@/lib/ProfileContext';
 import { GRADES, BUDGETS } from '@/lib/constants';
+import { useAiText } from '@/lib/ai/useAiText';
 
 export default function DiagnosisPage() {
   const { profile, loaded } = useProfile();
@@ -19,6 +20,24 @@ export default function DiagnosisPage() {
       router.replace('/profile');
     }
   }, [loaded, profile, router]);
+
+  const templateText = profile
+    ? [
+        `Вы — ${GRADES.find((g) => g.value === profile.grade)?.label}, интересуетесь: ${profile.interests.join(', ')}.`,
+        `Бюджет: ${BUDGETS.find((b) => b.value === profile.budget)?.label}.`,
+        profile.entScore ? `Ожидаемый балл ЕНТ: ${profile.entScore}.` : '',
+        `Предпочитаемые города: ${profile.cities.join(', ')}.`,
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : '';
+
+  const { data: aiText, source: aiSource, loading: aiLoading } = useAiText(
+    '/api/ai/diagnosis',
+    profile ? { profile, templateText } : null,
+    templateText,
+    (j) => j.text
+  );
 
   if (!profile) {
     return (
@@ -58,6 +77,33 @@ export default function DiagnosisPage() {
             Мы проанализировали ваш профиль и подобрали идеальные вузы
           </p>
         </div>
+
+        {/* Персональный разбор профиля (AI, с откатом на шаблон) */}
+        <Card size="lg" className="mb-8">
+          <div className="flex gap-3">
+            <span className="text-2xl flex-shrink-0">🤖</span>
+            <div className="flex-1">
+              <p className="font-semibold text-neutral-900 mb-2">
+                Что мы видим в вашем профиле
+              </p>
+              {aiLoading ? (
+                <div className="space-y-2 animate-pulse" aria-hidden="true">
+                  <div className="h-3 bg-neutral-200 rounded w-full" />
+                  <div className="h-3 bg-neutral-200 rounded w-11/12" />
+                  <div className="h-3 bg-neutral-200 rounded w-3/4" />
+                </div>
+              ) : (
+                <p className="text-body-md text-neutral-700 leading-relaxed">{aiText}</p>
+              )}
+              {aiSource === 'ai' && !aiLoading && (
+                <p className="text-body-xs text-neutral-500 mt-2">
+                  Текст сгенерирован ИИ на основе ваших ответов. Баллы и сроки берутся из
+                  проверенных данных, а не придумываются моделью.
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
 
         {/* Основная карточка с информацией */}
         <Card size="lg" className="mb-8 bg-gradient-to-br from-white to-primary-50 border-primary-200">
@@ -181,9 +227,9 @@ export default function DiagnosisPage() {
             <div>
               <p className="font-semibold text-neutral-900">Как мы подбираем вузы</p>
               <p className="text-body-sm text-neutral-700 mt-1">
-                Мы анализируем рейтинги вузов, вероятность поступления на основе вашего ЕНТ,
-                наличие нужных программ и стоимость обучения. Результаты отсортированы по
-                релевантности.
+                Мы сопоставляем ваши интересы с направлениями вуза, ваш ожидаемый балл ЕНТ —
+                с проходным баллом прошлого года, а также учитываем бюджет и город. Это подбор
+                по совпадениям, а не прогноз шансов на поступление.
               </p>
             </div>
           </div>

@@ -24,12 +24,12 @@ export default function StepHeader() {
         <div className="py-4 md:py-6">
           {/* Прогресс-бар */}
           <div className="mb-6">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 min-w-0">
               {STEPS.map((step, i) => (
-                <div key={step.path} className="flex items-center flex-1">
+                <div key={step.path} className="flex items-center flex-1 min-w-0">
                   {/* Точка шага */}
                   <div
-                    className={`flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full font-semibold text-sm transition-all duration-300 ${
+                    className={`flex flex-shrink-0 items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-full font-semibold text-sm transition-all duration-300 ${
                       i === currentIndex
                         ? 'bg-primary-500 text-white scale-100 shadow-lg'
                         : i < currentIndex
@@ -38,16 +38,16 @@ export default function StepHeader() {
                     }`}
                   >
                     {i < currentIndex ? (
-                      <span className="text-lg">✓</span>
+                      <span className="text-sm md:text-lg">✓</span>
                     ) : (
-                      <span className="text-xl">{stepIcons[step.key] || '•'}</span>
+                      <span className="text-sm md:text-xl">{stepIcons[step.key] || '•'}</span>
                     )}
                   </div>
 
                   {/* Линия между точками */}
                   {i < STEPS.length - 1 && (
                     <div
-                      className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${
+                      className={`flex-1 min-w-[4px] h-1 mx-1 md:mx-2 rounded-full transition-all duration-300 ${
                         i < currentIndex
                           ? 'bg-success-500'
                           : 'bg-neutral-200'

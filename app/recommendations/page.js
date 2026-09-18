@@ -9,6 +9,7 @@ import Badge from '@/components/Badge';
 import { useProfile } from '@/lib/ProfileContext';
 import { universities } from '@/lib/data/universities';
 import { recommend } from '@/lib/recommend';
+import { useAiText } from '@/lib/ai/useAiText';
 
 export default function RecommendationsPage() {
   const { profile, loaded, compareIds, toggleCompare } = useProfile();
@@ -21,9 +22,15 @@ export default function RecommendationsPage() {
     }
   }, [loaded, profile, router]);
 
-  if (!profile) return null;
+  const results = profile ? recommend(profile, universities, 3) : [];
 
-  const results = recommend(profile, universities, 3);
+  const explainPayload =
+    profile && results.length
+      ? { profile, items: results.map((r) => ({ id: r.id, name: r.name, reasons: r.reasons })) }
+      : null;
+  const { data: aiById } = useAiText('/api/ai/explain', explainPayload, {}, (j) => j.byId);
+
+  if (!profile) return null;
 
   const handleCompare = () => {
     setIsTransitioning(true);
@@ -127,6 +134,11 @@ export default function RecommendationsPage() {
                   <p className="text-body-sm font-semibold text-neutral-900 mb-3">
                     ✨ Почему мы рекомендуем:
                   </p>
+                  {aiById[uni.id] && (
+                    <p className="text-body-md text-neutral-700 leading-relaxed mb-3">
+                      {aiById[uni.id]}
+                    </p>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {uni.reasons.map((reason, i) => (
                       <div

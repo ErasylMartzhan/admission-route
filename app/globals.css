@@ -1,12 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Шрифты подключаются через next/font в app/layout.js (IBM Plex Serif + Sans).
+   Здесь их переопределять нельзя: Sora не поддерживает кириллицу, и весь русский
+   текст откатывался бы на системный шрифт. */
 :root {
-  --font-display: 'Sora', sans-serif;
-  --font-body: 'Inter', sans-serif;
   --color-primary: #0F8B7E;
   --color-bg: #F5F6F2;
 }
@@ -48,6 +47,21 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* Общий контейнер контента — используется на всех экранах.
+   Держит читаемую ширину на десктопе и боковые отступы на телефоне. */
+.container-md {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-md {
+    padding-inline: 1.5rem;
+  }
 }
 
 @keyframes fadeIn {

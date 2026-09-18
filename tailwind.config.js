@@ -8,6 +8,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Фон страницы — используется в градиентах (from-bg / to-bg) на всех экранах
+        bg: '#F5F6F2',
         // Основная палитра
         primary: {
           50: '#F0FBF9',

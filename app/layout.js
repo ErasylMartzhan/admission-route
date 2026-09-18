@@ -24,7 +24,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ru" className={`${plexSerif.variable} ${plexSans.variable}`}>
-      <body className="font-body bg-bg text-ink min-h-screen">
+      <body className="font-body text-neutral-900 min-h-screen">
         <ProfileProvider>{children}</ProfileProvider>
       </body>
     </html>
